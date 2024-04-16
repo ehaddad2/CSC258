@@ -26,13 +26,21 @@ void printMatrix()
 // Output: Transformed a that contains the shortest path lengths
 void floydWarshallSerial(int n)
 {
+	printMatrix();
+
 	for (int k = 0; k < n; k++)
 	{
 		for (int i = 0; i < n; i++)
 		{
 			for (int j = 0; j < n; j++)
 			{
-				mat[i][j] = std::min(mat[i][j], mat[i][k] + mat[k][j]);
+				if (mat[i][j] > (mat[i][k] + mat[k][j])
+                    && (mat[k][j] != INF
+                        && mat[i][k] != INF))
+                    mat[i][j] = mat[i][k] + mat[k][j];
+
+
+				// mat[i][j] = std::min(mat[i][j], mat[i][k] + mat[k][j]);
 			}
 		}
 	}
