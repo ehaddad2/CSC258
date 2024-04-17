@@ -22,6 +22,21 @@ void printMatrix()
 	}
 }
 
+// n = num vertices, p = num threads
+void floydWarshallParallel(int n, int p)
+{
+	for (int k = 1; k < n; k++)
+	{
+		// Each process P(i,j) that has a segment of the k-th row of D(k-1), broadcasts it to the P(*,j) processes
+
+		// Each process P(i,j) that has a segment of the k-th column of D(k-1), broadcasts it to the P(i,*) processes
+
+		// Each process waits to receive the needed segments
+
+		// Each process computes its part of the D(k) matrix
+	}
+}
+
 // Input: n - number of vertices
 // Output: Transformed a that contains the shortest path lengths
 void floydWarshallSerial(int n)
@@ -34,11 +49,8 @@ void floydWarshallSerial(int n)
 		{
 			for (int j = 0; j < n; j++)
 			{
-				if (mat[i][j] > (mat[i][k] + mat[k][j])
-                    && (mat[k][j] != INF
-                        && mat[i][k] != INF))
-                    mat[i][j] = mat[i][k] + mat[k][j];
-
+				if (mat[i][j] > (mat[i][k] + mat[k][j]) && (mat[k][j] != INF && mat[i][k] != INF))
+					mat[i][j] = mat[i][k] + mat[k][j];
 
 				// mat[i][j] = std::min(mat[i][j], mat[i][k] + mat[k][j]);
 			}
@@ -54,8 +66,9 @@ int main(int argc, char *argv[])
 
 	auto actualstart = high_resolution_clock::now();
 
-	cin >> n;
+	int p = atoi(argv[1]);
 
+	cin >> n;
 	mat = new int *[n];
 
 	for (int i = 0; i < n; i++)
@@ -74,7 +87,7 @@ int main(int argc, char *argv[])
 	}
 
 	auto fw_start = high_resolution_clock::now();
-	floydWarshallSerial(n);
+	floydWarshallParallel(n, p);
 
 	auto end = high_resolution_clock::now();
 	duration<double, milli> fw_time = end - fw_start;
