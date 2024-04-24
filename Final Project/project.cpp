@@ -2,26 +2,29 @@
 #include <stdlib.h>
 #include <chrono>
 #include <algorithm>
-#include<thread>
+#include <thread>
 
 using namespace std;
 using namespace chrono;
 const int INF = numeric_limits<int>::max();
-int n=0;
-int** dist;
-int** distCpy;
+int n = 0;
+int **dist;
+int **distCpy;
 
-void printMatrix(int** mat)
+void printMatrix(int **mat)
 {
-	for (int r = 0; r < n; r++) {
-		for (int c = 0; c < n; c++) {
+	for (int r = 0; r < n; r++)
+	{
+		for (int c = 0; c < n; c++)
+		{
 			cout << mat[r][c] << " ";
 		}
 		cout << "\n";
 	}
 }
 
-void innerLoop(int k, int startRow=0, int startCol=0, int endRow=n, int endCol=n) {
+void innerLoop(int k, int startRow = 0, int startCol = 0, int endRow = n, int endCol = n)
+{
 	for (int i = startRow; i < endRow; i++)
 	{
 		for (int j = startCol; j < endCol; j++)
@@ -34,7 +37,8 @@ void innerLoop(int k, int startRow=0, int startCol=0, int endRow=n, int endCol=n
 
 // Input: n - number of vertices
 // Output: Transformed a that contains the shortest path lengths
-void floydWarshallSerial(int n) {
+void floydWarshallSerial(int n)
+{
 	for (int k = 0; k < n; k++)
 	{
 		innerLoop(k);
@@ -44,8 +48,8 @@ void floydWarshallSerial(int n) {
 int main(int argc, char *argv[])
 {
 	cin >> n;
-	dist = new int*[n];
-	distCpy = new int*[n];
+	dist = new int *[n];
+	distCpy = new int *[n];
 
 	for (int i = 0; i < n; i++)
 	{
@@ -60,7 +64,7 @@ int main(int argc, char *argv[])
 		copy(dist[i], dist[i] + n, distCpy[i]);
 	}
 
-	//serial
+	// serial
 	auto serial_start = high_resolution_clock::now();
 	floydWarshallSerial(n);
 	auto serial_end = high_resolution_clock::now();
@@ -68,25 +72,30 @@ int main(int argc, char *argv[])
 	printMatrix(dist);
 	cout << "Serial time is: " << serial_time.count() << " milliseconds." << endl;
 
-	//parallel
+	// parallel
 	dist = distCpy;
 	int p = atoi(argv[1]);
-	int b = n/sqrt(p);//block dimensions are b x b
-	thread** threads = new thread*[p];
-		for (int i=0; i < sqrt(p); i++) 
-			threads[i] = new thread[sqrt(p)];
-	
+	int b = n / sqrt(p); // block dimensions are b x b
+	thread **threads = new thread *[p];
+	for (int i = 0; i < sqrt(p); i++) // making 2d thread array
+		threads[i] = new thread[sqrt(p)];
+
 	auto parallel_start = high_resolution_clock::now();
 
-	for (int k = 0; k < n; k++) {
-		for (int i=0; i < sqrt(p); i++) {
-			for (int j=0; j < sqrt(p); j++) {
-				threads[i][j] = thread(innerLoop, k, i*b, j*b, (i*b)+b, (j*b)+b);
+	for (int k = 0; k < n; k++)
+	{
+		for (int i = 0; i < sqrt(p); i++)
+		{
+			for (int j = 0; j < sqrt(p); j++)
+			{
+				threads[i][j] = thread(innerLoop, k, i * b, j * b, (i * b) + b, (j * b) + b);
 			}
 		}
 
-		for (int i=0; i < sqrt(p); i++) {
-			for (int j=0; j < sqrt(p); j++) {
+		for (int i = 0; i < sqrt(p); i++)
+		{
+			for (int j = 0; j < sqrt(p); j++)
+			{
 				threads[i][j].join();
 			}
 		}

@@ -8,12 +8,11 @@ https://en.wikipedia.org/wiki/Parallel_all-pairs_shortest_path_algorithm#:~:text
 
 
 Compile:
-    g++ -std=c++11 -o ser fw_serial.cpp
-    g++ -std=c++11 -o par fw_parallel.cpp
+    g++ project.cpp -o project -std=c++17
+
 
 
 Run:
-    ./ser < test/geeks.txt b
-    ./par < test/mat5.txt b
+    ./project < test/geeks.txt b
 
 
