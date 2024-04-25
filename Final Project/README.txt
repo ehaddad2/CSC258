@@ -9,10 +9,12 @@ https://en.wikipedia.org/wiki/Parallel_all-pairs_shortest_path_algorithm#:~:text
 
 Compile:
     g++ project.cpp -o project -std=c++17
+    g++ project_pool.cpp -o pool -std=c++17
 
 
 
 Run:
     ./project < test/geeks.txt b
+    ./pool < test/geeks.txt [b] [output filename]
 
 
