@@ -132,7 +132,6 @@ void printMatrix(int **mat)
 	}
 }
 
-
 void printMatrixToFile(int **mat, const std::string& filename) {
     // Open the output file for writing
     std::ofstream outputFile("outputs/" + filename);
@@ -157,6 +156,43 @@ void printMatrixToFile(int **mat, const std::string& filename) {
     outputFile.close();
 }
 
+bool checkCorrectness(const std::string &filename1, const std::string &filename2)
+{
+	std::ifstream file1("outputs/" + filename1);
+	std::ifstream file2("outputs/" + filename2);
+
+	if (!file1.is_open() || !file2.is_open())
+	{
+		// Failed to open one of the files
+		cout << "Failed to open one of the files" << endl;
+		return false;
+	}
+
+	std::string line1, line2;
+
+	// Compare each line in the files
+	int r = 0;
+	while (std::getline(file1, line1) && std::getline(file2, line2))
+	{
+		if (line1 != line2)
+		{
+			cout << "First incorrect matching line: " << r << endl;
+			return false;
+		}
+		r ++;
+	}
+
+	// Check if one file has more lines than the other
+	if (std::getline(file1, line1) || std::getline(file2, line2))
+	{
+		// One of the files has more lines
+		return false;
+	}
+
+	// All lines are the same
+	return true;
+
+}
 
 void innerLoop(int k, int startRow = 0, int startCol = 0, int endRow = n, int endCol = n)
 {
@@ -188,8 +224,8 @@ void floydWarshallParallel()
 			{
 				pool.enqueue([k, i, j, b]
 							 {
-								 cout << "Task " << k << i << j << " is running on thread "
-									  << this_thread::get_id() << endl;
+								//  cout << "Task " << k << i << j << " is running on thread "
+								// 	  << this_thread::get_id() << endl;
 								 innerLoop(k, i * b, j * b, (i * b) + b, (j * b) + b); });
 			}
 		}
@@ -240,4 +276,8 @@ int main(int argc, char *argv[])
 	printMatrixToFile(dist, output_filename + "_pool");
 	// printMatrix(dist);
 	cout << "Parallel time is: " << parallel_time.count() << " milliseconds." << endl;
+	
+	bool correct = checkCorrectness(output_filename + "_ser", output_filename + "_pool");
+	cout << "Correct Results: " << correct << endl;
+
 }
