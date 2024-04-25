@@ -237,7 +237,7 @@ int main(int argc, char *argv[])
 	floydWarshallParallel();
 	auto parallel_end = high_resolution_clock::now();
 	duration<double, milli> parallel_time = parallel_end - parallel_start;
-	printMatrixToFile(dist, output_filename);
+	printMatrixToFile(dist, output_filename + "_pool");
 	// printMatrix(dist);
 	cout << "Parallel time is: " << parallel_time.count() << " milliseconds." << endl;
 }

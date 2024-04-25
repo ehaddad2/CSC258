@@ -3,6 +3,8 @@
 #include <chrono>
 #include <algorithm>
 #include <thread>
+#include <fstream>
+
 
 using namespace std;
 using namespace chrono;
@@ -21,6 +23,30 @@ void printMatrix(int **mat)
 		}
 		cout << "\n";
 	}
+}
+
+void printMatrixToFile(int **mat, const std::string& filename) {
+    // Open the output file for writing
+    std::ofstream outputFile("outputs/" + filename);
+
+    // Check if the file is opened successfully
+    if (!outputFile.is_open()) {
+        std::cerr << "Error: Unable to open file " << filename << " for writing." << std::endl;
+        return;
+    }
+
+    // Redirect the output to the output file stream
+    std::ostream& output = outputFile;
+
+    // Print each number from the matrix to the output file stream
+    for (int r = 0; r < n; r++) {
+        for (int c = 0; c < n; c++) {
+            output << mat[r][c] << "\n"; // Print each number on a separate line
+        }
+    }
+
+    // Close the output file stream
+    outputFile.close();
 }
 
 void innerLoop(int k, int startRow = 0, int startCol = 0, int endRow = n, int endCol = n)
@@ -64,17 +90,23 @@ int main(int argc, char *argv[])
 		copy(dist[i], dist[i] + n, distCpy[i]);
 	}
 
+	int p = atoi(argv[1]);
+	string output_filename = argv[2];
+
 	// serial
 	auto serial_start = high_resolution_clock::now();
 	floydWarshallSerial(n);
 	auto serial_end = high_resolution_clock::now();
 	duration<double, milli> serial_time = serial_end - serial_start;
-	printMatrix(dist);
+	// printMatrix(dist);
+	printMatrixToFile(dist, output_filename + "_ser");
+
 	cout << "Serial time is: " << serial_time.count() << " milliseconds." << endl;
 
 	// parallel
 	dist = distCpy;
-	int p = atoi(argv[1]);
+	
+
 	int b = n / sqrt(p); // block dimensions are b x b
 	thread **threads = new thread *[p];
 	for (int i = 0; i < sqrt(p); i++) // making 2d thread array
@@ -103,6 +135,7 @@ int main(int argc, char *argv[])
 
 	auto parallel_end = high_resolution_clock::now();
 	duration<double, milli> parallel_time = parallel_end - parallel_start;
-	printMatrix(dist);
+	// printMatrix(dist);
+	printMatrixToFile(dist, output_filename + "_par");
 	cout << "Parallel time is: " << parallel_time.count() << " milliseconds." << endl;
 }
