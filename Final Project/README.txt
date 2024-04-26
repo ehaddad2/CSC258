@@ -15,12 +15,13 @@ Compile:
 
 Run:
     ./project < test/geeks.txt b output
-    ./project < test/318.txt 954 318_954
+    ./project 
+    ./project < test/318.txt 954 318_36
 
 
     
     ./pool < test/geeks.txt [p] [output filename]
     ./pool < test/geeks6.txt 9 g6_9        
-    ./pool < test/318.txt 954 318_954
+    ./pool < test/318.txt 954 318_36
 
 

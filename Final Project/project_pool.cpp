@@ -9,6 +9,7 @@
 #include <mutex>
 #include <queue>
 #include <fstream>
+#include <barrier>
 
 using namespace std;
 using namespace chrono;
@@ -204,10 +205,16 @@ void innerLoop(int k, int startRow = 0, int startCol = 0, int endRow = n, int en
 		}
 	}
 	tasks_completed_.fetch_add(1);
+	if(tasks_completed_ == p){
+		thread_barrier_.notify_one();
+	}
 }
 
 void floydWarshallParallel()
 {
+
+	int count = p;
+	std::barrier thread_barrier(count);
 
 	int b = n / sqrt(p); // block dimensions are b x b
 
@@ -228,12 +235,22 @@ void floydWarshallParallel()
 								 innerLoop(k, i * b, j * b, (i * b) + b, (j * b) + b); });
 			}
 		}
+		// cout << "before barrier" << endl;
+		
+		// int i = 100000;
+		// while (i != 0) {
+		// 	i--;
+		// }
+		// cout << "completed: " << tasks_completed_ << endl;
+		// thread_barrier.arrive_and_wait();
+		// cout << "after barrier" << endl;
 
 		// ensure all tasks of this k iteration are done
-		// std::unique_lock<std::mutex> lock(th_barrier_mutex_);
-		// while(tasks_completed_.load() != p){
-		// 	thread_barrier_.wait(lock);
-		// }
+		std::unique_lock<std::mutex> lock(th_barrier_mutex_);
+		while(tasks_completed_.load() != p){
+			thread_barrier_.wait(lock);
+		}
+
 	}
 }
 
@@ -266,7 +283,14 @@ int main(int argc, char *argv[])
 
 	// parallel
 	p = atoi(argv[1]);
+	cout<< "p: "<< p <<endl;
+
 	string output_filename = argv[2];
+	int b = n / sqrt(p); // block dimensions are b x b
+
+	
+	cout << "Num blocks/threads: " << p << endl;
+	cout << "Block size: " << b << "x" << b << endl;
 
 	auto parallel_start = high_resolution_clock::now();
 	floydWarshallParallel();

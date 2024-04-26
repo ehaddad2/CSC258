@@ -130,7 +130,7 @@ int main(int argc, char *argv[])
 		copy(dist[i], dist[i] + n, distCpy[i]);
 	}
 
-	int p = atoi(argv[1]);
+	int p = atoi(argv[1]);  // num blocks = num threads
 	string output_filename = argv[2];
 
 	// serial
@@ -148,6 +148,11 @@ int main(int argc, char *argv[])
 
 	int b = n / sqrt(p); // block dimensions are b x b
 	thread **threads = new thread *[p];
+
+	cout << "Num blocks/threads: " << p << endl;
+	cout << "Block size: " << b << "x" << b << endl;
+
+
 	for (int i = 0; i < sqrt(p); i++) // making 2d thread array
 		threads[i] = new thread[sqrt(p)];
 

@@ -1,5 +1,6 @@
 {
     "files.associations": {
+        "*.java": "java",
         "__bit_reference": "cpp",
         "__config": "cpp",
         "__debug": "cpp",
@@ -55,6 +56,11 @@
         "unordered_map": "cpp",
         "variant": "cpp",
         "vector": "cpp",
-        "algorithm": "cpp"
+        "algorithm": "cpp",
+        "condition_variable": "cpp",
+        "deque": "cpp",
+        "execution": "cpp",
+        "queue": "cpp",
+        "barrier": "cpp"
     }
 }

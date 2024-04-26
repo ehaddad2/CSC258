@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
 {
 
  	std::string filename = "test/matrixsmall.txt";
-    int lineNumber = 100000; // Example line number
+    int lineNumber = 1000000; // Example line number
 
     deleteLinesAfter(filename, lineNumber);
 }
