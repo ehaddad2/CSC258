@@ -75,7 +75,7 @@ bool checkCorrectness(const std::string &filename1, const std::string &filename2
 			cout << "First incorrect matching line: " << r << endl;
 			return false;
 		}
-		r ++;
+		r++;
 	}
 
 	// Check if one file has more lines than the other
@@ -87,7 +87,6 @@ bool checkCorrectness(const std::string &filename1, const std::string &filename2
 
 	// All lines are the same
 	return true;
-
 }
 
 void innerLoop(int k, int startRow = 0, int startCol = 0, int endRow = n, int endCol = n)

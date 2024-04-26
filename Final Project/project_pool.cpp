@@ -15,15 +15,11 @@ using namespace chrono;
 
 const int INF = numeric_limits<int>::max();
 int n = 0; // num vertices
-int p = 0; // total available threads
+int p = 0; // total available threads (num blocks)
 int **dist;
 atomic<int> tasks_completed_ = 0;
 condition_variable thread_barrier_;
 mutex th_barrier_mutex_;
-
-
-
-// thread pool constructor
 
 class ThreadPool
 {
@@ -132,28 +128,32 @@ void printMatrix(int **mat)
 	}
 }
 
-void printMatrixToFile(int **mat, const std::string& filename) {
-    // Open the output file for writing
-    std::ofstream outputFile("outputs/" + filename);
+void printMatrixToFile(int **mat, const std::string &filename)
+{
+	// Open the output file for writing
+	std::ofstream outputFile("outputs/" + filename);
 
-    // Check if the file is opened successfully
-    if (!outputFile.is_open()) {
-        std::cerr << "Error: Unable to open file " << filename << " for writing." << std::endl;
-        return;
-    }
+	// Check if the file is opened successfully
+	if (!outputFile.is_open())
+	{
+		std::cerr << "Error: Unable to open file " << filename << " for writing." << std::endl;
+		return;
+	}
 
-    // Redirect the output to the output file stream
-    std::ostream& output = outputFile;
+	// Redirect the output to the output file stream
+	std::ostream &output = outputFile;
 
-    // Print each number from the matrix to the output file stream
-    for (int r = 0; r < n; r++) {
-        for (int c = 0; c < n; c++) {
-            output << mat[r][c] << "\n"; // Print each number on a separate line
-        }
-    }
+	// Print each number from the matrix to the output file stream
+	for (int r = 0; r < n; r++)
+	{
+		for (int c = 0; c < n; c++)
+		{
+			output << mat[r][c] << "\n"; // Print each number on a separate line
+		}
+	}
 
-    // Close the output file stream
-    outputFile.close();
+	// Close the output file stream
+	outputFile.close();
 }
 
 bool checkCorrectness(const std::string &filename1, const std::string &filename2)
@@ -179,7 +179,7 @@ bool checkCorrectness(const std::string &filename1, const std::string &filename2
 			cout << "First incorrect matching line: " << r << endl;
 			return false;
 		}
-		r ++;
+		r++;
 	}
 
 	// Check if one file has more lines than the other
@@ -191,7 +191,6 @@ bool checkCorrectness(const std::string &filename1, const std::string &filename2
 
 	// All lines are the same
 	return true;
-
 }
 
 void innerLoop(int k, int startRow = 0, int startCol = 0, int endRow = n, int endCol = n)
@@ -217,7 +216,7 @@ void floydWarshallParallel()
 
 	for (int k = 0; k < n; k++)
 	{
-		tasks_completed_ = 0; //reset counter
+		tasks_completed_ = 0; // reset counter
 		for (int i = 0; i < sqrt(p); i++)
 		{
 			for (int j = 0; j < sqrt(p); j++)
@@ -276,8 +275,7 @@ int main(int argc, char *argv[])
 	printMatrixToFile(dist, output_filename + "_pool");
 	// printMatrix(dist);
 	cout << "Parallel time is: " << parallel_time.count() << " milliseconds." << endl;
-	
+
 	bool correct = checkCorrectness(output_filename + "_ser", output_filename + "_pool");
 	cout << "Correct Results: " << correct << endl;
-
 }
