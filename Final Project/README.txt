@@ -14,14 +14,17 @@ Compile:
 
 
 Run:
-    ./project < test/geeks.txt b output
-    ./project 
-    ./project < test/318.txt 954 318_36
+    ./project < test/geeks.txt [b] [output filename]
+
+    
+    ./project < test/100b.txt 100 100b_100
+    ./project < test/318.txt 36 318_36
 
 
     
-    ./pool < test/geeks.txt [p] [output filename]
-    ./pool < test/geeks6.txt 9 g6_9        
-    ./pool < test/318.txt 954 318_36
+    ./pool < test/geeks.txt [p = num threads] [output filename]
+    ./pool < test/geeks6.txt 9 g6_9     
+    ./pool < test/100b.txt 100 100b_100
+    ./pool < test/318.txt 36 318_36
 
 

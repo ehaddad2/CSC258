@@ -61,6 +61,7 @@
         "deque": "cpp",
         "execution": "cpp",
         "queue": "cpp",
-        "barrier": "cpp"
+        "barrier": "cpp",
+        "functional": "cpp"
     }
 }

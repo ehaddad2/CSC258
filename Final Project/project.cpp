@@ -8,7 +8,10 @@
 using namespace std;
 using namespace chrono;
 const int INF = numeric_limits<int>::max();
-int n = 0;
+
+int p = 0; // total available threads (num blocks)
+int n = 0; // num vertices
+int b = 0; // block dimension
 int **dist;
 int **distCpy;
 
@@ -39,16 +42,15 @@ void printMatrixToFile(int **mat, const std::string &filename)
 	// Redirect the output to the output file stream
 	std::ostream &output = outputFile;
 
-	// Print each number from the matrix to the output file stream
+	// Print each number to file
 	for (int r = 0; r < n; r++)
 	{
 		for (int c = 0; c < n; c++)
 		{
-			output << mat[r][c] << "\n"; // Print each number on a separate line
+			output << mat[r][c] << "\n";
 		}
 	}
 
-	// Close the output file stream
 	outputFile.close();
 }
 
@@ -59,7 +61,6 @@ bool checkCorrectness(const std::string &filename1, const std::string &filename2
 
 	if (!file1.is_open() || !file2.is_open())
 	{
-		// Failed to open one of the files
 		cout << "Failed to open one of the files" << endl;
 		return false;
 	}
@@ -81,11 +82,9 @@ bool checkCorrectness(const std::string &filename1, const std::string &filename2
 	// Check if one file has more lines than the other
 	if (std::getline(file1, line1) || std::getline(file2, line2))
 	{
-		// One of the files has more lines
 		return false;
 	}
 
-	// All lines are the same
 	return true;
 }
 
@@ -103,11 +102,37 @@ void innerLoop(int k, int startRow = 0, int startCol = 0, int endRow = n, int en
 
 // Input: n - number of vertices
 // Output: Transformed a that contains the shortest path lengths
-void floydWarshallSerial(int n)
+void floydWarshallSerial()
 {
 	for (int k = 0; k < n; k++)
 	{
 		innerLoop(k);
+	}
+}
+
+void floydWarshallParallel()
+{
+	thread **threads = new thread *[p];
+	for (int i = 0; i < sqrt(p); i++) // making 2d thread array
+		threads[i] = new thread[sqrt(p)];
+
+	for (int k = 0; k < n; k++)
+	{
+		for (int i = 0; i < sqrt(p); i++)
+		{
+			for (int j = 0; j < sqrt(p); j++)
+			{
+				threads[i][j] = thread(innerLoop, k, i * b, j * b, (i * b) + b, (j * b) + b);
+			}
+		}
+
+		for (int i = 0; i < sqrt(p); i++)
+		{
+			for (int j = 0; j < sqrt(p); j++)
+			{
+				threads[i][j].join();
+			}
+		}
 	}
 }
 
@@ -130,56 +155,30 @@ int main(int argc, char *argv[])
 		copy(dist[i], dist[i] + n, distCpy[i]);
 	}
 
-	int p = atoi(argv[1]);  // num blocks = num threads
+	p = atoi(argv[1]); // num blocks = num threads
 	string output_filename = argv[2];
+	b = n / sqrt(p); // block dimensions are b x b
+
+	cout << "Num blocks/threads: " << p << endl;
+	cout << "Block size: " << b << "x" << b << endl;
 
 	// serial
 	auto serial_start = high_resolution_clock::now();
-	floydWarshallSerial(n);
+	floydWarshallSerial();
 	auto serial_end = high_resolution_clock::now();
-	duration<double, milli> serial_time = serial_end - serial_start;
-	// printMatrix(dist);
-	printMatrixToFile(dist, output_filename + "_ser");
 
+	duration<double, milli> serial_time = serial_end - serial_start;
+	printMatrixToFile(dist, output_filename + "_ser");
 	cout << "Serial time is: " << serial_time.count() << " milliseconds." << endl;
 
 	// parallel
 	dist = distCpy;
 
-	int b = n / sqrt(p); // block dimensions are b x b
-	thread **threads = new thread *[p];
-
-	cout << "Num blocks/threads: " << p << endl;
-	cout << "Block size: " << b << "x" << b << endl;
-
-
-	for (int i = 0; i < sqrt(p); i++) // making 2d thread array
-		threads[i] = new thread[sqrt(p)];
-
 	auto parallel_start = high_resolution_clock::now();
-
-	for (int k = 0; k < n; k++)
-	{
-		for (int i = 0; i < sqrt(p); i++)
-		{
-			for (int j = 0; j < sqrt(p); j++)
-			{
-				threads[i][j] = thread(innerLoop, k, i * b, j * b, (i * b) + b, (j * b) + b);
-			}
-		}
-
-		for (int i = 0; i < sqrt(p); i++)
-		{
-			for (int j = 0; j < sqrt(p); j++)
-			{
-				threads[i][j].join();
-			}
-		}
-	}
-
+	floydWarshallParallel();
 	auto parallel_end = high_resolution_clock::now();
+
 	duration<double, milli> parallel_time = parallel_end - parallel_start;
-	// printMatrix(dist);
 	printMatrixToFile(dist, output_filename + "_par");
 	cout << "Parallel time is: " << parallel_time.count() << " milliseconds." << endl;
 

@@ -22,6 +22,7 @@ atomic<int> tasks_completed_ = 0;
 condition_variable thread_barrier_;
 mutex th_barrier_mutex_;
 
+// ThreadPool as implemented by geeks for geeks
 class ThreadPool
 {
 public:
@@ -29,7 +30,6 @@ public:
 	// number of threads
 	ThreadPool(size_t num_threads = thread::hardware_concurrency())
 	{
-
 		// Creating worker threads
 		for (size_t i = 0; i < num_threads; ++i)
 		{
@@ -37,23 +37,14 @@ public:
 								  { 
                 while (true) { 
                     function<void()> task; 
-                    // The reason for putting the below code 
-                    // here is to unlock the queue before 
-                    // executing the task so that other 
-                    // threads can perform enqueue tasks 
                     { 
-                        // Locking the queue so that data 
-                        // can be shared safely 
                         unique_lock<mutex> lock(queue_mutex_); 
-  
-                        // Waiting until there is a task to 
-                        // execute or the pool is stopped 
+						// Wait until there is a task to execute or the pool is stopped
                         cv_.wait(lock, [this] { 
                             return !tasks_.empty() || stop_; 
                         }); 
   
-                        // exit the thread in case the pool 
-                        // is stopped and there are no tasks 
+                        // Exit the thread in case the pool is stopped and there are no tasks 
                         if (stop_ && tasks_.empty()) { 
                             return; 
                         } 
@@ -62,7 +53,7 @@ public:
                         task = std::move(tasks_.front()); 
                         tasks_.pop(); 
                     } 
-  
+					// Execute task
                     task(); 
                 } });
 		}
@@ -80,8 +71,7 @@ public:
 		// Notify all threads
 		cv_.notify_all();
 
-		// Joining all worker threads to ensure they have
-		// completed their tasks
+		// Joining all worker threads to ensure they have completed their tasks
 		for (auto &thread : threads_)
 		{
 			thread.join();
@@ -99,21 +89,10 @@ public:
 	}
 
 private:
-	// Vector to store worker threads
 	vector<thread> threads_;
-
-	// Queue of tasks
 	queue<function<void()>> tasks_;
-
-	// Mutex to synchronize access to shared data
 	mutex queue_mutex_;
-
-	// Condition variable to signal changes in the state of
-	// the tasks queue
 	condition_variable cv_;
-
-	// Flag to indicate whether the thread pool should stop
-	// or not
 	bool stop_ = false;
 };
 
@@ -144,16 +123,15 @@ void printMatrixToFile(int **mat, const std::string &filename)
 	// Redirect the output to the output file stream
 	std::ostream &output = outputFile;
 
-	// Print each number from the matrix to the output file stream
+	// Print each number to file
 	for (int r = 0; r < n; r++)
 	{
 		for (int c = 0; c < n; c++)
 		{
-			output << mat[r][c] << "\n"; // Print each number on a separate line
+			output << mat[r][c] << "\n";
 		}
 	}
 
-	// Close the output file stream
 	outputFile.close();
 }
 
@@ -164,7 +142,6 @@ bool checkCorrectness(const std::string &filename1, const std::string &filename2
 
 	if (!file1.is_open() || !file2.is_open())
 	{
-		// Failed to open one of the files
 		cout << "Failed to open one of the files" << endl;
 		return false;
 	}
@@ -186,11 +163,9 @@ bool checkCorrectness(const std::string &filename1, const std::string &filename2
 	// Check if one file has more lines than the other
 	if (std::getline(file1, line1) || std::getline(file2, line2))
 	{
-		// One of the files has more lines
 		return false;
 	}
 
-	// All lines are the same
 	return true;
 }
 
@@ -204,22 +179,20 @@ void innerLoop(int k, int startRow = 0, int startCol = 0, int endRow = n, int en
 				dist[i][j] = dist[i][k] + dist[k][j];
 		}
 	}
+
+	// All tasks for k-th loop completed
 	tasks_completed_.fetch_add(1);
-	if(tasks_completed_ == p){
+	if (tasks_completed_ == p)
+	{
 		thread_barrier_.notify_one();
 	}
 }
 
-void floydWarshallParallel()
+void floydWarshallParallel_Pool()
 {
-
-	int count = p;
-	std::barrier thread_barrier(count);
-
 	int b = n / sqrt(p); // block dimensions are b x b
-
-	// create pool with p threads and enqueue tasks
 	ThreadPool pool(p);
+	std::barrier thread_barrier(p);
 
 	for (int k = 0; k < n; k++)
 	{
@@ -229,38 +202,16 @@ void floydWarshallParallel()
 			for (int j = 0; j < sqrt(p); j++)
 			{
 				pool.enqueue([k, i, j, b]
-							 {
-								//  cout << "Task " << k << i << j << " is running on thread "
-								// 	  << this_thread::get_id() << endl;
-								 innerLoop(k, i * b, j * b, (i * b) + b, (j * b) + b); });
+							 { innerLoop(k, i * b, j * b, (i * b) + b, (j * b) + b); });
 			}
 		}
-		// cout << "before barrier" << endl;
-		
-		// int i = 100000;
-		// while (i != 0) {
-		// 	i--;
-		// }
-		// cout << "completed: " << tasks_completed_ << endl;
-		// thread_barrier.arrive_and_wait();
-		// cout << "after barrier" << endl;
 
-		// ensure all tasks of this k iteration are done
+		// Ensure all tasks of this k iteration are done
 		std::unique_lock<std::mutex> lock(th_barrier_mutex_);
-		while(tasks_completed_.load() != p){
+		while (tasks_completed_.load() != p)
+		{
 			thread_barrier_.wait(lock);
 		}
-
-	}
-}
-
-// Input: n - number of vertices
-// Output: Transformed a that contains the shortest path lengths
-void floydWarshallSerial(int n)
-{
-	for (int k = 0; k < n; k++)
-	{
-		innerLoop(k);
 	}
 }
 
@@ -281,25 +232,21 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	// parallel
 	p = atoi(argv[1]);
-	cout<< "p: "<< p <<endl;
-
 	string output_filename = argv[2];
 	int b = n / sqrt(p); // block dimensions are b x b
 
-	
 	cout << "Num blocks/threads: " << p << endl;
 	cout << "Block size: " << b << "x" << b << endl;
 
 	auto parallel_start = high_resolution_clock::now();
-	floydWarshallParallel();
+	floydWarshallParallel_Pool();
 	auto parallel_end = high_resolution_clock::now();
+
 	duration<double, milli> parallel_time = parallel_end - parallel_start;
 	printMatrixToFile(dist, output_filename + "_pool");
-	// printMatrix(dist);
-	cout << "Parallel time is: " << parallel_time.count() << " milliseconds." << endl;
 
+	cout << "Parallel time is: " << parallel_time.count() << " milliseconds." << endl;
 	bool correct = checkCorrectness(output_filename + "_ser", output_filename + "_pool");
 	cout << "Correct Results: " << correct << endl;
 }
