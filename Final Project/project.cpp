@@ -101,7 +101,6 @@ void innerLoop(int k, int startRow = 0, int startCol = 0, int endRow = n, int en
 }
 
 // Input: n - number of vertices
-// Output: Transformed a that contains the shortest path lengths
 void floydWarshallSerial()
 {
 	for (int k = 0; k < n; k++)
@@ -113,7 +112,7 @@ void floydWarshallSerial()
 void floydWarshallParallel()
 {
 	thread **threads = new thread *[p];
-	for (int i = 0; i < sqrt(p); i++) // making 2d thread array
+	for (int i = 0; i < sqrt(p); i++) // Making 2d thread array
 		threads[i] = new thread[sqrt(p)];
 
 	for (int k = 0; k < n; k++)
@@ -162,7 +161,7 @@ int main(int argc, char *argv[])
 	cout << "Num blocks/threads: " << p << endl;
 	cout << "Block size: " << b << "x" << b << endl;
 
-	// serial
+	// Serial
 	auto serial_start = high_resolution_clock::now();
 	floydWarshallSerial();
 	auto serial_end = high_resolution_clock::now();
@@ -171,7 +170,7 @@ int main(int argc, char *argv[])
 	printMatrixToFile(dist, output_filename + "_ser");
 	cout << "Serial time is: " << serial_time.count() << " milliseconds." << endl;
 
-	// parallel
+	// Parallel
 	dist = distCpy;
 
 	auto parallel_start = high_resolution_clock::now();

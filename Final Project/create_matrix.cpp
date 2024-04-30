@@ -4,8 +4,8 @@
 #include <string>
 using namespace std;
 
-
-void deleteLinesAfter(const std::string& filename, int lineNumber) {
+ // g++ create_matrix.cpp -o cm 
+void getLinesAfter(const std::string& filename, int startLineNumber, int endLineNumber) {
     // Open the file for reading and writing
     std::ifstream inputFile(filename);
     if (!inputFile.is_open()) {
@@ -20,10 +20,14 @@ void deleteLinesAfter(const std::string& filename, int lineNumber) {
     }
 
     std::string line;
-    int currentLineNumber = 0;
+    int currentLineNumber = 1;
+
+    while(std::getline(inputFile, line) && currentLineNumber < startLineNumber){
+        currentLineNumber++;
+    }
 
     // Read lines from the input file and copy them to the temporary file until the given line number
-    while (std::getline(inputFile, line) && currentLineNumber < lineNumber) {
+    while (std::getline(inputFile, line) && currentLineNumber < endLineNumber) {
         outputFile << line << std::endl;
         currentLineNumber++;
     }
@@ -32,22 +36,13 @@ void deleteLinesAfter(const std::string& filename, int lineNumber) {
     inputFile.close();
     outputFile.close();
 
-    // // Replace the original file with the temporary file
-    if (std::rename("temp.txt", filename.c_str()) != 0) {
-        std::cerr << "Error: Failed to replace file " << filename << std::endl;
-    }
-	else {
-		cout << "success" <<endl;
-	}
-
-
 }
 
 int main(int argc, char *argv[])
 {
+ 	std::string filename = "test/matrixlarge.txt";
+    int startLine = 793585;
+    int endLine = 1793585;
 
- 	std::string filename = "test/matrixsmall.txt";
-    int lineNumber = 1000000; // Example line number
-
-    deleteLinesAfter(filename, lineNumber);
+    getLinesAfter(filename, startLine, endLine);
 }

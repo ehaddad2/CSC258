@@ -26,8 +26,7 @@ mutex th_barrier_mutex_;
 class ThreadPool
 {
 public:
-	// // Constructor to creates a thread pool with given
-	// number of threads
+	// Constructor to create a thread pool with given number of threads
 	ThreadPool(size_t num_threads = thread::hardware_concurrency())
 	{
 		// Creating worker threads
